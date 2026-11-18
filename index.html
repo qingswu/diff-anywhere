@@ -1,0 +1,161 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Diff Anywhere</title>
+    <link rel="stylesheet" href="/src/styles.css" />
+  </head>
+  <body>
+    <div id="titlebar" class="titlebar"><span id="title-text">Diff Anywhere</span></div>
+    <header class="topbar">
+      <div class="endpoints">
+        <label class="endpoint" data-side="left">
+          <span class="side-tag left">L</span>
+          <input id="left" spellcheck="false" autocomplete="off"
+                 placeholder="~/project  or  user@host:/srv/app" />
+          <button class="icon-btn browse" data-side="left" data-dir="1" title="Choose local folder">
+            <svg viewBox="0 0 24 24"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>
+          </button>
+          <button class="icon-btn browse" data-side="left" data-dir="0" title="Choose local file">
+            <svg viewBox="0 0 24 24"><path d="M6 3h8l5 5v11a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2z"/><path d="M14 3v5h5"/></svg>
+          </button>
+        </label>
+        <button id="swap" class="icon-btn swap" title="Swap sides">
+          <svg viewBox="0 0 24 24"><path d="M7 7h13l-4-4M17 17H4l4 4"/></svg>
+        </button>
+        <label class="endpoint" data-side="right">
+          <span class="side-tag right">R</span>
+          <input id="right" spellcheck="false" autocomplete="off"
+                 placeholder="~/project-copy  or  host:/srv/app" />
+          <button class="icon-btn browse" data-side="right" data-dir="1" title="Choose local folder">
+            <svg viewBox="0 0 24 24"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>
+          </button>
+          <button class="icon-btn browse" data-side="right" data-dir="0" title="Choose local file">
+            <svg viewBox="0 0 24 24"><path d="M6 3h8l5 5v11a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2z"/><path d="M14 3v5h5"/></svg>
+          </button>
+        </label>
+        <button id="compare" class="primary" title="Compare (⌘↵)">
+          <span class="spinner"></span><span class="label">Compare</span>
+        </button>
+      </div>
+      <div class="options">
+        <label class="filters">
+          <svg viewBox="0 0 24 24"><path d="M4 5h16l-6 8v5l-4 2v-7z"/></svg>
+          <input id="filters" spellcheck="false" autocomplete="off"
+                 placeholder="Exclude: .git, node_modules, *.log, /build" />
+        </label>
+        <div class="segmented" id="method" title="How files with equal size are compared">
+          <button data-v="smart" title="Same size and time = identical; otherwise check contents">Smart</button>
+          <button data-v="content" title="Check contents of every same-size file">Content</button>
+          <button data-v="quick" title="Size and time only, never reads files">Size + date</button>
+        </div>
+        <div class="segmented icons" id="theme">
+          <button data-v="light" title="Light theme">
+            <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>
+          </button>
+          <button data-v="dark" title="Dark theme">
+            <svg viewBox="0 0 24 24"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>
+          </button>
+          <button data-v="auto" title="Match system">
+            <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 3a9 9 0 0 1 0 18z" fill="currentColor"/></svg>
+          </button>
+        </div>
+      </div>
+    </header>
+
+    <div id="error" class="banner hidden"></div>
+
+    <main id="main" class="welcome-mode">
+      <aside id="sidebar">
+        <div class="side-head">
+          <div class="search-box" id="search-box">
+            <input id="search" placeholder="Filter files…" spellcheck="false" autocomplete="off" />
+            <button class="sopt" data-o="matchCase" title="Match Case (⌥⌘C)">Aa</button>
+            <button class="sopt word" data-o="wholeWord" title="Match Whole Word (⌥⌘W)">ab</button>
+            <button class="sopt" data-o="regex" title="Use Regular Expression (⌥⌘R)">.*</button>
+          </div>
+          <div class="search-error hidden" id="search-error"></div>
+          <div class="chips" id="chips">
+            <button data-s="changed" class="chip changed on"><i></i>Changed <b>0</b></button>
+            <button data-s="left_only" class="chip left_only on"><i></i>Left only <b>0</b></button>
+            <button data-s="right_only" class="chip right_only on"><i></i>Right only <b>0</b></button>
+            <button data-s="same" class="chip same"><i></i>Same <b>0</b></button>
+          </div>
+          <div class="tree-tools">
+            <button id="expand-all" class="text-btn">Expand all</button>
+            <button id="collapse-all" class="text-btn">Collapse all</button>
+          </div>
+        </div>
+        <div id="tree" tabindex="0"><div class="tree-inner"></div></div>
+      </aside>
+      <div id="resizer"></div>
+      <section id="diff-pane">
+        <div class="diff-head hidden" id="diff-head">
+          <div class="diff-title">
+            <span id="diff-status" class="badge"></span>
+            <span id="diff-path" class="path"></span>
+          </div>
+          <div class="diff-tools">
+            <button id="prev-change" class="icon-btn" title="Previous change (⇧F7)">
+              <svg viewBox="0 0 24 24"><path d="M6 15l6-6 6 6"/></svg>
+            </button>
+            <span id="change-counter" class="counter">–</span>
+            <button id="next-change" class="icon-btn" title="Next change (F7)">
+              <svg viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg>
+            </button>
+            <span class="sep"></span>
+            <button class="toggle" data-opt="inline" title="Inline view">Inline</button>
+            <button class="toggle" data-opt="whitespace" title="Ignore leading/trailing whitespace">Ignore WS</button>
+            <button class="toggle" data-opt="collapse" title="Collapse unchanged regions">Collapse</button>
+            <button class="toggle" data-opt="wrap" title="Word wrap">Wrap</button>
+            <span class="sep"></span>
+            <button id="copy-to-left" class="icon-btn" title="Copy current change to the left (⌥⌘←)">
+              <svg viewBox="0 0 24 24"><path d="M19 12H5m6-6l-6 6 6 6"/></svg>
+            </button>
+            <button id="copy-to-right" class="icon-btn" title="Copy current change to the right (⌥⌘→)">
+              <svg viewBox="0 0 24 24"><path d="M5 12h14m-6-6l6 6-6 6"/></svg>
+            </button>
+            <button id="copy-all-left" class="toggle" title="Replace the left side with the right side">⇐ All</button>
+            <button id="copy-all-right" class="toggle" title="Replace the right side with the left side">All ⇒</button>
+            <button id="save" class="save-btn" title="Save changes (⌘S)" disabled>Save</button>
+          </div>
+        </div>
+        <div class="diff-meta hidden" id="diff-meta">
+          <div id="meta-left"></div>
+          <div id="meta-right"></div>
+        </div>
+        <div id="editor-host"></div>
+        <div id="diff-message" class="message hidden"></div>
+        <div id="welcome" class="welcome">
+          <div class="welcome-card">
+            <h1>Diff Anywhere</h1>
+            <p>Compare two files or folders, each one local or on any host you can <code>ssh</code> into.</p>
+            <dl>
+              <dt>Local</dt><dd><code>~/code/app</code> · <code>/etc/nginx/nginx.conf</code></dd>
+              <dt>Remote</dt><dd><code>prod:/srv/app</code> · <code>me@10.0.0.5:~/app</code> · <code>host:relative/path</code></dd>
+              <dt>Exclude</dt><dd><code>node_modules</code> any depth · <code>*.log</code> by pattern · <code>/build</code> from root only</dd>
+            </dl>
+            <div class="keys">
+              <span><kbd>⌘</kbd><kbd>↵</kbd> compare</span>
+              <span><kbd>↑</kbd><kbd>↓</kbd> browse files</span>
+              <span><kbd>[</kbd><kbd>]</kbd> prev/next changed file</span>
+              <span><kbd>F7</kbd> next change</span>
+              <span><kbd>⌥</kbd><kbd>⌘</kbd><kbd>←</kbd><kbd>→</kbd> copy change</span>
+              <span><kbd>⌘</kbd><kbd>S</kbd> save</span>
+              <span><kbd>Tab</kbd> complete path</span>
+            </div>
+            <p class="hint">Uses your system <code>ssh</code> config, keys and agent. Password prompts aren't supported, so use key or agent auth.</p>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <footer class="statusbar">
+      <span id="status-left">Ready</span>
+      <span id="status-right"></span>
+    </footer>
+
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>
