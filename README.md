@@ -59,3 +59,6 @@ npm run tauri dev                  # run with hot reload
 npx tauri build --bundles app      # release .app (~5 MB)
 cd src-tauri && cargo test
 ```
+
+## License
+MIT. See [LICENSE](LICENSE).

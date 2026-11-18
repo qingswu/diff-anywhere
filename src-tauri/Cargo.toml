@@ -3,6 +3,7 @@ name = "diff-anywhere"
 version = "0.1.0"
 description = "Visual diff for local and remote (SSH) files and folders"
 edition = "2021"
+license = "MIT"
 
 [lib]
 name = "diff_anywhere_lib"
