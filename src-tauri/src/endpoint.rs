@@ -107,6 +107,13 @@ fn ssh(host: &str, script: &str, stdin: Option<Vec<u8>>) -> Result<Output, Strin
         "-o",
         "ControlPersist=600",
     ]);
+    // On Windows, don't flash a console window for every ssh call from the GUI app.
+    #[cfg(windows)]
+    {
+        use std::os::windows::process::CommandExt;
+        const CREATE_NO_WINDOW: u32 = 0x0800_0000;
+        cmd.creation_flags(CREATE_NO_WINDOW);
+    }
     // Run through `sh -c` so the remote login shell (fish, csh, ...) doesn't matter.
     cmd.arg("--").arg(host).arg(format!("sh -c {}", sq(script)));
     cmd.stdin(if stdin.is_some() { Stdio::piped() } else { Stdio::null() })
